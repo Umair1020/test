@@ -37,8 +37,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-        user: "career@spotcommglobal.com",
-        pass: "Career123456789.",
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
     }
 });
 app.get('/', (req, res) => {
