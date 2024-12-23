@@ -16,7 +16,6 @@
 // module.exports = app
 
 
-require('dotenv').config();;
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
@@ -30,6 +29,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+require('dotenv').config();
 
 // Define the path for the uploads directory
 // const uploadDir = path.join(__dirname, 'uploads');
@@ -41,7 +41,7 @@ if (!fs.existsSync(uploadDir)) {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, uploadDir);
+        cb(null, '/tmp'); // Use the temporary directory
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
@@ -67,7 +67,15 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
+ 
     },
+});
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('SMTP error:', error);
+    } else {
+        console.log('SMTP connection verified:', success);
+    }
 });
 app.get('/home', (req, res) => {
     res.status(200).json('Welcome, your app is working well');
