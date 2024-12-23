@@ -1,38 +1,19 @@
-// const express = require('express')
-// const app = express()
-// const PORT = 4000
-
-
-// app.get('/home', (req, res) => {
-//   res.status(200).json('Welcome, your app is working well');
-// })
-
-
-// app.listen(PORT, () => {
-//   console.log(`Server running at http://localhost:${PORT}`);
-// });
-
-// // Export the Express API
-// module.exports = app
-
-
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs')
-const PORT = 4000
+const fs = require('fs');
+
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-require('dotenv').config();
 
 // Define the path for the uploads directory
-// const uploadDir = path.join(__dirname, 'uploads');
+const uploadDir = path.join(__dirname, 'uploads');
 
 // Check if the directory exists, and if not, create it
 if (!fs.existsSync(uploadDir)) {
@@ -41,7 +22,7 @@ if (!fs.existsSync(uploadDir)) {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '/tmp'); // Use the temporary directory
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
@@ -49,48 +30,30 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-const uploadDir = path.join('/tmp', 'uploads');
+
 // Configure your Hostinger SMTP credentials here
-// const transporter = nodemailer.createTransport({
-//     host: 'smtp.hostinger.com',
-//     port: 465,
-//     secure: true,
-//     auth: {
-//         user: 'career@spotcommglobal.com',
-//         pass: 'Career123456789.'
-//     }
-// });
 const transporter = nodemailer.createTransport({
     host: 'smtp.hostinger.com',
     port: 465,
     secure: true,
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
- 
-    },
-});
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('SMTP error:', error);
-    } else {
-        console.log('SMTP connection verified:', success);
+        user: "career@spotcommglobal.com",
+        pass: "Career123456789.",
     }
 });
-app.get('/home', (req, res) => {
-    res.status(200).json('Welcome, your app is working well');
+app.get('/', (req, res) => {
+    res.json({
+        message: "hello world"
+    })
 })
-
 app.post('/send-email', upload.single('cv'), (req, res) => {
     const { fullName, email, contact, jobTitle, linkedIn } = req.body;
     const cv = req.file;
 
-    console.log('Request body:', req.body);
-    console.log('File uploaded:', req.file);
-
-    if (!req.file) {
-        console.error('No file uploaded');
-        return res.status(400).send('No file uploaded');
+    // Check if the file was uploaded successfully
+    if (!cv) {
+        console.error("No file uploaded");
+        return res.status(400).send('Error: No file uploaded');
     }
 
     const mailOptions = {
@@ -122,9 +85,50 @@ app.post('/send-email', upload.single('cv'), (req, res) => {
     });
 });
 
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running on ${PORT}`);
 });
+// const express = require("express");
+// const mysql = require("mysql2");
+// const cors = require("cors");
 
-// Export the Express API
-module.exports = app
+// const app = express();
+// app.use(cors());
+
+// // Database connection
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "wglenn",
+//   password: "P0pc0rn182!",
+//   database: "CYAN",
+// });
+
+// // Route to get settings data (Last Updated value)
+// app.get("/settings", (req, res) => {
+//   db.query("SELECT DBValue FROM Settings WHERE id = 3", (err, result) => {
+//     if (err) {
+//       console.error("Error fetching settings:", err);
+//       res.status(500).send("Error fetching settings");
+//     } else {
+//       res.json(result[0]);
+//     }
+//   });
+// });
+
+// // Route to get backhauls data
+// app.get("/backhauls", (req, res) => {
+//   db.query("SELECT * FROM Backhauls ORDER BY Name", (err, result) => {
+//     if (err) {
+//       console.error("Error fetching backhauls:", err);
+//       res.status(500).send("Error fetching backhauls");
+//     } else {
+//       res.json(result);
+//     }
+//   });
+// });
+
+// const PORT = 5000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on http://localhost:${PORT}`);
+// });
