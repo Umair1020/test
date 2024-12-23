@@ -16,13 +16,14 @@
 // module.exports = app
 
 
+require('dotenv').config();;
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs')
 const PORT = 4000
 
 const app = express();
@@ -31,7 +32,7 @@ app.use(bodyParser.json());
 
 
 // Define the path for the uploads directory
-const uploadDir = path.join(__dirname, 'uploads');
+// const uploadDir = path.join(__dirname, 'uploads');
 
 // Check if the directory exists, and if not, create it
 if (!fs.existsSync(uploadDir)) {
@@ -48,28 +49,40 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
+const uploadDir = path.join('/tmp', 'uploads');
 // Configure your Hostinger SMTP credentials here
+// const transporter = nodemailer.createTransport({
+//     host: 'smtp.hostinger.com',
+//     port: 465,
+//     secure: true,
+//     auth: {
+//         user: 'career@spotcommglobal.com',
+//         pass: 'Career123456789.'
+//     }
+// });
 const transporter = nodemailer.createTransport({
     host: 'smtp.hostinger.com',
     port: 465,
     secure: true,
     auth: {
-        user: 'career@spotcommglobal.com',
-        pass: 'Career123456789.'
-    }
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
 });
 app.get('/home', (req, res) => {
     res.status(200).json('Welcome, your app is working well');
 })
+
 app.post('/send-email', upload.single('cv'), (req, res) => {
     const { fullName, email, contact, jobTitle, linkedIn } = req.body;
     const cv = req.file;
 
-    // Check if the file was uploaded successfully
-    if (!cv) {
-        console.error("No file uploaded");
-        return res.status(400).send('Error: No file uploaded');
+    console.log('Request body:', req.body);
+    console.log('File uploaded:', req.file);
+
+    if (!req.file) {
+        console.error('No file uploaded');
+        return res.status(400).send('No file uploaded');
     }
 
     const mailOptions = {
